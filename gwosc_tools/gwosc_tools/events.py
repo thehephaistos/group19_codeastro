@@ -10,7 +10,15 @@ from .api import DEFAULT_RELEASES, fetch_event_versions
 
 
 def event_to_row(event: Mapping[str, Any]) -> dict[str, Any]:
-    """Flatten one GWOSC event and its default parameters into one row."""
+    """Flatten one GWOSC event and its default parameters into one row.
+    
+    Args:
+        event: A mapping containing GWOSC event data with parameters
+    
+    Returns: 
+        dict[str, Any]: A flattened row dictionary
+    
+    """
     detectors = event.get("detectors") or []
     row = {
         "name": event.get("name"),
@@ -41,7 +49,15 @@ def events_to_dataframe(
     require_component_masses: bool = True,
     sort_by_gps: bool = True,
 ) -> pd.DataFrame:
-    """Convert GWOSC events into a flattened pandas DataFrame."""
+    """Convert GWOSC events into a flattened pandas DataFrame.
+    
+    Args: 
+        events: Sequence of event mappings
+        require_component_masses: If True, drops rows with missing mass 1 and mass 2 values
+        sort_by_gps: If True, sorts the resulting dataframe 
+    
+    Returns: 
+        dataframe: flattened dataframe with one row per event"""
     dataframe = pd.DataFrame(event_to_row(event) for event in events)
 
     if dataframe.empty:
@@ -67,7 +83,14 @@ def fetch_events_dataframe(
     session: requests.Session | None = None,
     timeout: float = 30,
 ) -> pd.DataFrame:
-    """Fetch GWOSC events and return an analysis-ready DataFrame."""
+    """Fetch GWOSC events and return an analysis-ready DataFrame.
+    
+    Args: 
+        releases: Sequence of release names to fetch events from
+
+    Returns:
+        dataframe: Dataframe containing all fetched event with parameters
+    """
     events = fetch_event_versions(
         releases,
         session=session,
