@@ -8,12 +8,32 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 
+
+
 def plot_masses(
     dataframe: pd.DataFrame,
     *,
     show: bool = True,
 ) -> tuple[Figure, Axes]:
-    """Plot component and final masses for GWOSC compact-object mergers."""
+    
+
+    """Plots masses
+    
+    Plot component and final masses for GWOSC compact-object mergers.
+    
+    Args: 
+    dataframe (Dataframe): dataframe from gwosc website
+
+    Returns: 
+    figure, axis: merging events stellar graveyard plot
+    
+    """
+
+    
+
+
+
+
     required_columns = {"mass_1_source", "mass_2_source"}
     missing = required_columns.difference(dataframe.columns)
     if missing:
