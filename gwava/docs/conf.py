@@ -5,7 +5,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../gwosc_tools/'))
+sys.path.insert(0, os.path.abspath('../gwava/'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -14,7 +14,7 @@ project = 'gwava'
 copyright = '2026, Jayanth, Oguz, Ines'
 author = 'Jayanth, Oguz, Ines'
 root_doc = 'index'
-release = '0.0.1'
+release = '0.0.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

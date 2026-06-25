@@ -5,5 +5,5 @@ Plotting Functions
 
 Function to perform plotting.
 
-.. automodule:: plotting
-   :members:
+.. automodule:: gwava.plotting
+   :members: 

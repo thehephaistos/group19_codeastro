@@ -16,4 +16,5 @@ documentation for details.
    :caption: Contents:
 
    plot_masses.rst
+   events.rst
 
