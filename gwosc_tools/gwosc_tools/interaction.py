@@ -117,7 +117,10 @@ def format_event_details(
 
     reference = row.get("detail_url")
     if _has_value(reference):
-        lines.append(f"Reference: {reference}")
+        reference = str(reference)
+        if len(reference) > 65:
+            reference = reference[:62] + "..."
+            lines.append(f"Reference: {reference}")
 
     return "\n".join(lines)
 
@@ -182,13 +185,38 @@ def enable_point_details(
             format_event_details(row, selected_column=selected_column)
         )
 
-        midpoint = sum(axis.get_xlim()) / 2
-        if x > midpoint:
-            annotation.set_position((-16, 18))
-            annotation.set_horizontalalignment("right")
+        x_min, x_max = axis.get_xlim()
+        y_min, y_max = axis.get_ylim()
+
+        x_fraction = (x-x_min) / (x_max - x_min)
+
+        # The y-axis is logarithmic, so calculating the fraction in display coordinates
+
+        point_display = axis.transData.transform((x, y))
+        axes_box = axis.get_window_extent()
+        y_fraction = (
+            (point_display[1] - axes_box.y0)
+            / axes_box.height
+        )
+        # Moving the box left or right depending on horizontal position.
+        if x_fraction > 0.60:
+            x_offset = -20
+            horizontal_alignment = "right"
         else:
-            annotation.set_position((16, 18))
-            annotation.set_horizontalalignment("left")
+            x_offset = 20
+            horizontal_alignment = "left"
+
+        # Put the box below points near the top of the plot.
+        if y_fraction > 0.65:
+            y_offset = -20
+            vertical_alignment = "top"
+        else:
+            y_offset = 20
+            vertical_alignment = "bottom"
+
+        annotation.set_position((x_offset, y_offset))
+        annotation.set_horizontalalignment(horizontal_alignment)
+        annotation.set_verticalalignment(vertical_alignment)
 
         annotation.set_visible(True)
         figure.canvas.draw_idle()

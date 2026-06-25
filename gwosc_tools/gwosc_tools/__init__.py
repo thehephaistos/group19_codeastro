@@ -20,6 +20,7 @@ __all__ = [
     "create_diamond_layout",
     "get_yaml",
     "load_config",
+    "loading_indicator",
     "plot_masses",
     "SORT_MODES",
     "sort_events"
@@ -38,6 +39,7 @@ _FUNCTION_MODULES = {
     "create_diamond_layout": ".sorting",
     "get_yaml": ".config",
     "load_config": ".config",
+    "loading_indicator": ".terminal",
     "plot_masses": ".plotting",
     "SORT_MODES": ".sorting",
     "sort_events": ".sorting"

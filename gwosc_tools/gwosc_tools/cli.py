@@ -4,6 +4,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
+from .terminal import loading_indicator
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -63,24 +64,33 @@ def run_argument(argv: Sequence[str] | None = None) -> int:
 
 
     if args.plot_masses or args.save:
-        from .events import fetch_events_dataframe
-        from .plotting import plot_masses
-        from .sorting import sort_events
+        with loading_indicator("Fetching and preparing GWOSC plot..."):
+            from .events import fetch_events_dataframe
+            from .plotting import plot_masses
+            from .sorting import sort_events
 
-        dataframe = fetch_events_dataframe()
+            dataframe = fetch_events_dataframe()
 
-        dataframe = sort_events(
-            dataframe,
-            mode=args.sort,
-            random_seed=args.random_seed
-        )  
+            dataframe = sort_events(
+                dataframe,
+                mode=args.sort,
+                random_seed=args.random_seed
+            )
 
-        figure, _ = plot_masses(dataframe, show=not args.no_show)
+            # Stop the terminal spinner before opening the interactive window.
+            figure, _ = plot_masses(dataframe, show=False)
+
+            if args.save:
+                args.save.parent.mkdir(parents=True, exist_ok=True)
+                figure.savefig(args.save, dpi=200, bbox_inches="tight")
 
         if args.save:
-            args.save.parent.mkdir(parents=True, exist_ok=True)
-            figure.savefig(args.save, dpi=200, bbox_inches="tight")
             print(f"Saved plot: {args.save}")
+
+        if not args.no_show:
+            import matplotlib.pyplot as plt
+
+            plt.show()
 
     return 0
 
