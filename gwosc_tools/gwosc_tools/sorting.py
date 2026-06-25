@@ -156,7 +156,9 @@ def create_diamond_layout(dataframe: pd.DataFrame) -> pd.DataFrame:
     metadata stored on the same row. Use this mode for the visual overview,
     not for event-by-event scientific analysis.
     """
-    working = dataframe.copy(deep=True).reset_index(drop=True)
+    source_events = dataframe.copy(deep=True).reset_index(drop=True)
+    source_events.attrs = {}
+    working = source_events.copy(deep=True)
 
     if working.empty:
         return working
@@ -168,22 +170,33 @@ def create_diamond_layout(dataframe: pd.DataFrame) -> pd.DataFrame:
         names = ", ".join(sorted(missing))
         raise ValueError(f"Diamond layout requires these columns: {names}")
 
-    mass_1 = pd.to_numeric(working["mass_1_source"], errors="coerce")
-    mass_2 = pd.to_numeric(working["mass_2_source"], errors="coerce")
-    component_masses = pd.concat([mass_1, mass_2], ignore_index=True)
+    mass_1 = pd.to_numeric(source_events["mass_1_source"], errors="coerce")
+    mass_2 = pd.to_numeric(source_events["mass_2_source"], errors="coerce")
+    event_indices = pd.Series(range(len(source_events)), dtype=int)
+    component_masses = pd.concat(
+        [
+            pd.DataFrame({"value": mass_1, "event_index": event_indices}),
+            pd.DataFrame({"value": mass_2, "event_index": event_indices}),
+        ],
+        ignore_index=True,
+    )
 
-    if component_masses.isna().any():
+    if component_masses["value"].isna().any():
         raise ValueError("Diamond layout requires non-missing component masses")
 
     event_count = len(working)
     sorted_components = component_masses.sort_values(
+        "value",
         kind="stable",
-    ).to_numpy()
+    ).reset_index(drop=True)
 
-    lower_components = sorted_components[:event_count]
-    upper_components = sorted_components[event_count:][::-1]
+    lower_components = sorted_components.iloc[:event_count].reset_index(drop=True)
+    upper_components = (
+        sorted_components.iloc[event_count:].iloc[::-1].reset_index(drop=True)
+    )
     component_spans = pd.Series(
-        upper_components - lower_components,
+        upper_components["value"].to_numpy()
+        - lower_components["value"].to_numpy(),
         dtype=float,
     )
     pair_positions = _center_weighted_order(
@@ -191,17 +204,29 @@ def create_diamond_layout(dataframe: pd.DataFrame) -> pd.DataFrame:
         largest_at_center=True,
     )
 
-    remnant_masses = _sorting_mass(working)
+    remnant_masses = _sorting_mass(source_events)
     remnant_positions = _center_weighted_order(
         remnant_masses,
         largest_at_center=True,
     )
 
-    working["mass_1_source"] = upper_components[pair_positions]
-    working["mass_2_source"] = lower_components[pair_positions]
+    working["mass_1_source"] = (
+        upper_components["value"].to_numpy()[pair_positions]
+    )
+    working["mass_2_source"] = (
+        lower_components["value"].to_numpy()[pair_positions]
+    )
     working["final_mass_source"] = (
         remnant_masses.iloc[remnant_positions].reset_index(drop=True)
     )
+    working["_mass_1_event_index"] = (
+        upper_components["event_index"].to_numpy()[pair_positions]
+    )
+    working["_mass_2_event_index"] = (
+        lower_components["event_index"].to_numpy()[pair_positions]
+    )
+    working["_final_mass_event_index"] = remnant_positions
+    working.attrs["source_events"] = source_events
     working.attrs["preserves_event_associations"] = False
 
     return working
