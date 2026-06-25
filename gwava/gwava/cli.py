@@ -8,7 +8,24 @@ from .terminal import loading_indicator
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Create the command-line argument parser."""
+    """Create and configure the command-line argument parser.
+    
+    Builds an ```argparse.ArgumentParser`` for loading the GWOSC YAML
+    specification and controlling option plotting behavior.
+
+    Supported command-line options include:
+        --plot-masses : Fetch GWOSC event data and display a mass plot.
+        --save        : Save the generated mass plot to a file.
+        --no-show     : Suppress opening the plot window.
+        --sort        : Choose how events are ordered in the plot.
+        --random-seed : Set the random seed when using random sorting.
+
+    Args: 
+        None
+
+    Returns: 
+        argparse.ArgumentParser: A configured paruser for the CLI.
+    """
     parser = argparse.ArgumentParser(
         description="Load the GWOSC YAML specification and optionally plot event masses."
     )
@@ -59,9 +76,26 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run_argument(argv: Sequence[str] | None = None) -> int:
-    """Run the command-line application."""
-    args = build_parser().parse_args(argv)
+        """Run the command-line application.
 
+    Parses command-line arguments, fetches and sorts gravitational-wave
+    event data when plotting is requested, and generates or saves the
+    corresponding mass plot.
+
+    Behavior depends on the parsed options:
+        - ``--plot-masses`` triggers event fetching and plotting.
+        - ``--save`` writes the plot image to disk.
+        - ``--no-show`` suppresses displaying the interactive plot window.
+        - ``--sort`` controls event ordering.
+        - ``--random-seed`` sets the seed for random sorting.
+
+    Args:
+        argv (Sequence[str] | None): Optional sequence of command-line
+            arguments. If ``None``, arguments are read from ``sys.argv``.
+
+    Returns:
+        int: Exit status code (0 for successful execution).
+    """
 
     if args.plot_masses or args.save:
         with loading_indicator("Fetching and preparing GWOSC plot..."):
